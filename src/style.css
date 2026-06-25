@@ -1,0 +1,294 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: radial-gradient(circle at top, #1f2a44 0%, #0a0d14 55%, #05070b 100%);
+  color: #f8fafc;
+  font-family: Arial, "Microsoft YaHei", sans-serif;
+}
+
+button {
+  border: 0;
+  border-radius: 12px;
+  padding: 14px 16px;
+  background: #2563eb;
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:active {
+  transform: scale(0.96);
+}
+
+.hidden {
+  display: none !important;
+}
+
+#app {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.start-screen {
+  width: min(920px, 100%);
+  display: flex;
+  justify-content: center;
+}
+
+.start-card {
+  width: min(720px, 100%);
+  padding: 36px;
+  border-radius: 28px;
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+  text-align: center;
+}
+
+.eyebrow {
+  color: #93c5fd;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.start-card h1 {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.intro {
+  color: #cbd5e1;
+  font-size: 18px;
+  margin-bottom: 24px;
+}
+
+.start-button {
+  min-width: 180px;
+  font-size: 20px;
+  padding: 16px 24px;
+  margin-bottom: 28px;
+}
+
+.start-help {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  text-align: left;
+}
+
+.start-help div {
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.start-help h2 {
+  margin-bottom: 10px;
+}
+
+.start-help p {
+  color: #cbd5e1;
+  line-height: 1.7;
+}
+
+.game-shell {
+  display: grid;
+  grid-template-columns: auto 280px;
+  gap: 24px;
+  align-items: start;
+}
+
+.game-panel,
+.side-panel .card {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+}
+
+.game-panel {
+  padding: 18px;
+  border-radius: 24px;
+}
+
+.game-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: 28px;
+}
+
+h2 {
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+#status {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.15);
+  color: #86efac;
+  font-weight: 700;
+}
+
+#game {
+  display: block;
+  width: min(78vw, 300px);
+  height: auto;
+  border-radius: 12px;
+  border: 2px solid rgba(148, 163, 184, 0.35);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.side-panel {
+  display: grid;
+  gap: 16px;
+}
+
+.card {
+  border-radius: 20px;
+  padding: 16px;
+}
+
+#next {
+  display: block;
+  width: 120px;
+  height: 120px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.stats {
+  display: grid;
+  gap: 12px;
+}
+
+.stats div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stats span,
+.controls-help p,
+.touch-help p {
+  color: #cbd5e1;
+}
+
+.stats strong {
+  font-size: 24px;
+}
+
+.controls-help,
+.touch-help {
+  display: grid;
+  gap: 6px;
+}
+
+.mobile-controls {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+#drop {
+  background: #dc2626;
+}
+
+#pause {
+  background: #7c3aed;
+}
+
+#restart {
+  background: #475569;
+}
+
+#quit {
+  grid-column: 1 / -1;
+  background: #111827;
+}
+
+@media (max-width: 760px) {
+  #app {
+    align-items: flex-start;
+    padding: 12px;
+  }
+
+  .start-card {
+    padding: 24px;
+  }
+
+  .start-card h1 {
+    font-size: 36px;
+  }
+
+  .start-help {
+    grid-template-columns: 1fr;
+  }
+
+  .game-shell {
+    width: 100%;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .game-panel {
+    padding: 12px;
+  }
+
+  .game-header {
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    font-size: 22px;
+  }
+
+  #game {
+    width: min(92vw, 300px);
+    margin: 0 auto;
+  }
+
+  .side-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .controls-help {
+    display: none;
+  }
+
+  .touch-help {
+    display: block;
+  }
+
+  .mobile-controls {
+    position: sticky;
+    bottom: 0;
+    padding: 12px 0;
+    background: linear-gradient(to top, #05070b 80%, transparent);
+  }
+}

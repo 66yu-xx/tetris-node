@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>俄罗斯方块</title>
+  </head>
+  <body>
+    <div id="app">
+      <section id="start-screen" class="start-screen">
+        <div class="start-card">
+          <p class="eyebrow">Node.js + Vite</p>
+          <h1>俄罗斯方块</h1>
+          <p class="intro">电脑、手机都能玩的本地版小游戏。</p>
+
+          <button id="start-game" class="start-button">开始游戏</button>
+
+          <div class="start-help">
+            <div>
+              <h2>电脑</h2>
+              <p>拖动鼠标：左右移动</p>
+              <p>右键：旋转</p>
+              <p>左键双击：直接落下</p>
+            </div>
+            <div>
+              <h2>手机</h2>
+              <p>轻点：旋转</p>
+              <p>按住左右拖动：左右移动</p>
+              <p>明显下滑：直接落下</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <main id="game-shell" class="game-shell hidden">
+        <section class="game-panel">
+          <div class="game-header">
+            <h1>俄罗斯方块</h1>
+            <p id="status">游戏中</p>
+          </div>
+
+          <canvas id="game"></canvas>
+        </section>
+
+        <aside class="side-panel">
+          <div class="card">
+            <h2>下一个</h2>
+            <canvas id="next" width="120" height="120"></canvas>
+          </div>
+
+          <div class="card stats">
+            <div>
+              <span>分数</span>
+              <strong id="score">0</strong>
+            </div>
+            <div>
+              <span>消行</span>
+              <strong id="lines">0</strong>
+            </div>
+            <div>
+              <span>等级</span>
+              <strong id="level">1</strong>
+            </div>
+          </div>
+
+          <div class="card controls-help">
+            <h2>电脑控制</h2>
+            <p>鼠标拖动：左右移动</p>
+            <p>鼠标右键：旋转</p>
+            <p>鼠标左键双击：直接落下</p>
+            <p>← →：左右移动</p>
+            <p>↓：加速下落</p>
+            <p>↑：旋转</p>
+            <p>空格：直接落下</p>
+            <p>P：暂停</p>
+            <p>R：重新开始</p>
+          </div>
+
+          <div class="card touch-help">
+            <h2>手机控制</h2>
+            <p>轻点游戏区：旋转</p>
+            <p>按住左右拖动：左右移动</p>
+            <p>明显向下滑动：直接落下</p>
+          </div>
+
+          <div class="mobile-controls">
+            <button id="left">左</button>
+            <button id="right">右</button>
+            <button id="rotate">旋转</button>
+            <button id="drop">落下</button>
+            <button id="pause">暂停</button>
+            <button id="restart">重开</button>
+            <button id="quit">退出游戏</button>
+          </div>
+        </aside>
+      </main>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
