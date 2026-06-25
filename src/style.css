@@ -19,9 +19,9 @@
 html,
 body {
   width: 100%;
-  min-height: 100%;
+  height: 100%;
   margin: 0;
-  overflow-x: hidden;
+  overflow: hidden;
   overscroll-behavior: none;
   background:
     radial-gradient(circle at top left, rgba(125, 211, 252, 0.16), transparent 36rem),
@@ -44,10 +44,10 @@ canvas {
 
 button {
   border: 0;
-  border-radius: 14px;
+  border-radius: 12px;
   background: linear-gradient(135deg, var(--panel-2), #29314d);
   color: var(--text);
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   cursor: pointer;
   box-shadow: inset 0 0 0 1px var(--border);
@@ -63,23 +63,26 @@ button:active {
 }
 
 #app {
-  min-height: 100dvh;
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden;
 }
 
-/* Start screen */
+/* start screen */
 
 .start-screen {
-  min-height: 100dvh;
+  width: 100%;
+  height: 100dvh;
   display: grid;
   place-items: center;
-  padding: 24px;
+  padding: 20px;
 }
 
 .start-card {
   width: min(92vw, 520px);
   padding: 30px;
   border-radius: 28px;
-  background: rgba(24, 29, 47, 0.86);
+  background: rgba(24, 29, 47, 0.9);
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
   text-align: center;
@@ -88,7 +91,7 @@ button:active {
 
 .start-card h1 {
   margin: 0 0 16px;
-  font-size: clamp(36px, 9vw, 64px);
+  font-size: clamp(34px, 9vw, 64px);
   line-height: 1;
 }
 
@@ -107,123 +110,48 @@ button:active {
   color: #07111f;
 }
 
-/* Game screen */
+/* game screen */
 
 .game-screen {
-  min-height: 100dvh;
-  padding: 18px;
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  padding:
+    max(10px, env(safe-area-inset-top))
+    max(10px, env(safe-area-inset-right))
+    max(10px, env(safe-area-inset-bottom))
+    max(10px, env(safe-area-inset-left));
 }
 
-.game-header {
-  width: min(100%, 920px);
-  margin: 0 auto 14px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.game-header h1 {
-  margin: 0;
-  font-size: clamp(24px, 4vw, 38px);
-}
-
-.game-header p {
-  margin: 4px 0 0;
-  color: var(--muted);
-}
-
-/*
-  关键：
-  这里只让 .hud-panel / .board-panel / .control-panel 作为 game-area 的直接子元素。
-  不使用 display: contents。
-  电脑端：棋盘左边，HUD 和按钮右边。
-  手机端：HUD 上，棋盘中，按钮下。
-*/
-
-.game-area {
-  width: min(100%, 920px);
-  margin: 0 auto;
+.game-layout {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
   display: grid;
-  grid-template-columns: minmax(300px, 420px) minmax(230px, 280px);
-  grid-template-areas:
-    "board hud"
-    "board controls";
-  gap: 16px;
-  align-items: start;
+  grid-template-columns: minmax(0, auto) clamp(112px, 26vw, 250px);
+  gap: clamp(8px, 2vw, 16px);
+  align-items: center;
   justify-content: center;
 }
 
-.hud-panel {
-  grid-area: hud;
-  display: grid;
-  gap: 14px;
-}
-
 .board-panel {
-  grid-area: board;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
   display: grid;
   place-items: center;
 }
 
-.control-panel {
-  grid-area: controls;
-  display: grid;
-  gap: 12px;
-}
-
-.next-card,
-.score-card,
-.control-panel {
-  border-radius: 22px;
-  padding: 14px;
-  background: rgba(24, 29, 47, 0.88);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
-}
-
-.next-card h2 {
-  margin: 0 0 10px;
-  font-size: 18px;
-}
-
-#nextCanvas {
-  width: 120px;
-  height: 120px;
-  display: block;
-  margin: 0 auto;
-  border-radius: 16px;
-  background: rgba(0, 0, 0, 0.2);
-  touch-action: none;
-}
-
-.score-card {
-  display: grid;
-  gap: 10px;
-}
-
-.score-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.055);
-}
-
-.score-row span {
-  color: var(--muted);
-}
-
-.score-row strong {
-  font-size: 22px;
-}
-
 #gameCanvas {
-  width: min(100%, 420px);
+  display: block;
+  width: min(
+    calc((100dvh - max(20px, env(safe-area-inset-top) + env(safe-area-inset-bottom))) / 2),
+    calc(100vw - clamp(112px, 26vw, 250px) - 34px),
+    420px
+  );
   aspect-ratio: 1 / 2;
   height: auto;
-  display: block;
+  max-height: calc(100dvh - max(20px, env(safe-area-inset-top) + env(safe-area-inset-bottom)));
   border-radius: 22px;
   background: #0b1020;
   border: 1px solid var(--border);
@@ -236,24 +164,88 @@ button:active {
   cursor: grabbing;
 }
 
-.touch-controls {
+.side-panel {
+  width: 100%;
+  max-height: 100%;
+  min-width: 0;
+  overflow: hidden;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(6px, 1.2vh, 12px);
+  align-content: center;
+}
+
+.next-card,
+.score-card,
+.control-card {
+  border-radius: 18px;
+  padding: clamp(7px, 1.4vw, 14px);
+  background: rgba(24, 29, 47, 0.88);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.next-card h2 {
+  margin: 0 0 8px;
+  font-size: clamp(13px, 2vw, 18px);
+  text-align: center;
+}
+
+#nextCanvas {
+  width: min(100%, 120px);
+  aspect-ratio: 1 / 1;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.2);
+  touch-action: none;
+}
+
+.score-card {
+  display: grid;
+  gap: 7px;
+}
+
+.score-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  padding: clamp(5px, 1vw, 10px) clamp(7px, 1.2vw, 12px);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.score-row span {
+  color: var(--muted);
+  font-size: clamp(12px, 2vw, 15px);
+}
+
+.score-row strong {
+  font-size: clamp(16px, 3vw, 22px);
+}
+
+.control-card {
+  display: grid;
   gap: 8px;
 }
 
-.touch-controls button {
-  min-height: 52px;
+.touch-controls {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
 }
 
 .action-controls {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  grid-template-columns: 1fr;
+  gap: 6px;
 }
 
+.touch-controls button,
 .action-controls button {
-  min-height: 48px;
+  min-height: clamp(34px, 5.6vh, 52px);
+  padding: 4px;
 }
 
 #exitBtn {
@@ -261,62 +253,56 @@ button:active {
   background: linear-gradient(135deg, #7f1d1d, #be123c);
 }
 
-/* Mobile layout */
+.status-text {
+  margin: 0;
+  color: var(--muted);
+  font-size: clamp(11px, 1.8vw, 14px);
+  text-align: center;
+}
 
-@media (max-width: 760px) {
-  .game-screen {
-    min-height: 100dvh;
-    padding:
-      max(10px, env(safe-area-inset-top))
-      10px
-      max(12px, env(safe-area-inset-bottom));
+/* wider desktop: buttons can be more relaxed */
+
+@media (min-width: 761px) {
+  .game-layout {
+    grid-template-columns: minmax(300px, 420px) minmax(220px, 280px);
   }
 
-  .game-header {
-    display: none;
+  #gameCanvas {
+    width: min(420px, calc((100dvh - 32px) / 2));
   }
 
-  .game-area {
-    width: 100%;
-    min-height: 100dvh;
-    margin: 0;
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "hud"
-      "board"
-      "controls";
-    grid-template-rows: auto 1fr auto;
+  .touch-controls {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .action-controls {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* very small phones */
+
+@media (max-width: 430px) {
+  .game-layout {
+    grid-template-columns: minmax(0, auto) 112px;
     gap: 8px;
-    align-items: stretch;
-    justify-content: stretch;
   }
 
-  .hud-panel {
-    grid-area: hud;
-    display: grid;
-    grid-template-columns: 108px 1fr;
-    gap: 8px;
-    align-items: stretch;
+  #gameCanvas {
+    width: min(calc((100dvh - 20px) / 2), calc(100vw - 132px));
+    border-radius: 16px;
   }
 
   .next-card,
   .score-card,
-  .control-panel {
-    border-radius: 16px;
-    padding: 8px;
+  .control-card {
+    border-radius: 14px;
+    padding: 7px;
     box-shadow: none;
   }
 
-  .next-card h2 {
-    margin-bottom: 5px;
-    font-size: 13px;
-    text-align: center;
-  }
-
   #nextCanvas {
-    width: 82px;
-    height: 82px;
+    width: 78px;
   }
 
   .score-card {
@@ -324,81 +310,25 @@ button:active {
   }
 
   .score-row {
-    min-height: 25px;
-    padding: 4px 8px;
-    border-radius: 10px;
+    padding: 4px 6px;
   }
 
   .score-row span {
-    font-size: 12px;
+    font-size: 11px;
   }
 
   .score-row strong {
-    font-size: 17px;
-  }
-
-  .board-panel {
-    grid-area: board;
-    min-height: 0;
-    display: grid;
-    place-items: center;
-  }
-
-  #gameCanvas {
-    width: min(92vw, calc((100dvh - 190px) / 2));
-    max-width: 390px;
-    height: auto;
-    border-radius: 18px;
-  }
-
-  .control-panel {
-    grid-area: controls;
-    gap: 8px;
-  }
-
-  .touch-controls {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 6px;
-  }
-
-  .touch-controls button {
-    min-height: 44px;
     font-size: 15px;
-    border-radius: 12px;
   }
 
-  .action-controls {
-    gap: 6px;
-  }
-
+  .touch-controls button,
   .action-controls button {
-    min-height: 40px;
-    font-size: 14px;
-    border-radius: 12px;
-  }
-}
-
-@media (max-width: 380px) {
-  .hud-panel {
-    grid-template-columns: 96px 1fr;
+    min-height: 32px;
+    font-size: 12px;
+    border-radius: 10px;
   }
 
-  #nextCanvas {
-    width: 72px;
-    height: 72px;
-  }
-
-  #gameCanvas {
-    width: min(90vw, calc((100dvh - 178px) / 2));
-  }
-
-  .touch-controls button {
-    min-height: 40px;
-    font-size: 14px;
-  }
-
-  .action-controls button {
-    min-height: 36px;
-    font-size: 13px;
+  .status-text {
+    display: none;
   }
 }

@@ -14,28 +14,25 @@
       <section id="startScreen" class="start-screen">
         <div class="start-card">
           <h1>俄罗斯方块</h1>
-          <p>电脑：鼠标拖动 / 右键旋转 / 双击落下 / 键盘控制</p>
+          <p>电脑：鼠标拖动左右移动 / 右键旋转 / 左键双击或下滑直接落下</p>
           <p>手机：轻点旋转 / 左右拖动移动 / 下滑直接落下</p>
           <button id="startBtn" class="primary-btn">开始游戏</button>
         </div>
       </section>
 
       <section id="gameScreen" class="game-screen hidden">
-        <header class="game-header">
-          <div>
-            <h1>俄罗斯方块</h1>
-            <p id="statusText">准备开始</p>
-          </div>
-        </header>
+        <main class="game-layout">
+          <section class="board-panel" aria-label="游戏棋盘">
+            <canvas id="gameCanvas" width="300" height="600"></canvas>
+          </section>
 
-        <main class="game-area">
-          <section class="hud-panel" aria-label="游戏信息">
-            <div class="next-card">
+          <aside class="side-panel" aria-label="游戏信息和控制">
+            <section class="next-card">
               <h2>下一个</h2>
               <canvas id="nextCanvas" width="120" height="120"></canvas>
-            </div>
+            </section>
 
-            <div class="score-card">
+            <section class="score-card">
               <div class="score-row">
                 <span>分数</span>
                 <strong id="scoreText">0</strong>
@@ -48,27 +45,25 @@
                 <span>等级</span>
                 <strong id="levelText">1</strong>
               </div>
-            </div>
-          </section>
+            </section>
 
-          <section class="board-panel" aria-label="游戏棋盘">
-            <canvas id="gameCanvas" width="300" height="600"></canvas>
-          </section>
+            <section class="control-card">
+              <div class="touch-controls">
+                <button id="leftBtn" type="button">←</button>
+                <button id="rotateBtn" type="button">旋转</button>
+                <button id="rightBtn" type="button">→</button>
+                <button id="dropBtn" type="button">落下</button>
+              </div>
 
-          <section class="control-panel" aria-label="游戏控制">
-            <div class="touch-controls">
-              <button id="leftBtn" type="button">←</button>
-              <button id="rotateBtn" type="button">旋转</button>
-              <button id="rightBtn" type="button">→</button>
-              <button id="dropBtn" type="button">落下</button>
-            </div>
+              <div class="action-controls">
+                <button id="pauseBtn" type="button">暂停</button>
+                <button id="restartBtn" type="button">重开</button>
+                <button id="exitBtn" type="button">退出</button>
+              </div>
+            </section>
 
-            <div class="action-controls">
-              <button id="pauseBtn" type="button">暂停</button>
-              <button id="restartBtn" type="button">重开</button>
-              <button id="exitBtn" type="button">退出</button>
-            </div>
-          </section>
+            <p id="statusText" class="status-text">准备开始</p>
+          </aside>
         </main>
       </section>
     </div>

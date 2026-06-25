@@ -134,8 +134,13 @@ function cloneMatrix(matrix) {
   return matrix.map((row) => [...row]);
 }
 
+function randomType() {
+  return PIECE_TYPES[Math.floor(Math.random() * PIECE_TYPES.length)];
+}
+
 function createPiece(type = randomType()) {
   const matrix = cloneMatrix(SHAPES[type]);
+
   return {
     type,
     matrix,
@@ -143,10 +148,6 @@ function createPiece(type = randomType()) {
     x: Math.floor(COLS / 2) - Math.ceil(matrix[0].length / 2),
     y: 0,
   };
-}
-
-function randomType() {
-  return PIECE_TYPES[Math.floor(Math.random() * PIECE_TYPES.length)];
 }
 
 function resetGame() {
@@ -200,6 +201,8 @@ function togglePause() {
   if (!isPaused) {
     lastTime = 0;
     animationId = requestAnimationFrame(update);
+  } else {
+    draw();
   }
 }
 
@@ -246,24 +249,6 @@ function drawCell(targetCtx, x, y, size, color) {
   targetCtx.fillRect(px + 3, py + 3, size - 6, 4);
 }
 
-function drawBoard() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  ctx.fillStyle = "#0b1020";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  drawGrid();
-
-  for (let y = 0; y < ROWS; y += 1) {
-    for (let x = 0; x < COLS; x += 1) {
-      const color = board[y][x];
-      if (color) {
-        drawCell(ctx, x, y, BLOCK, color);
-      }
-    }
-  }
-}
-
 function drawGrid() {
   ctx.strokeStyle = "rgba(255, 255, 255, 0.06)";
   ctx.lineWidth = 1;
@@ -280,6 +265,25 @@ function drawGrid() {
     ctx.moveTo(0, y * BLOCK);
     ctx.lineTo(COLS * BLOCK, y * BLOCK);
     ctx.stroke();
+  }
+}
+
+function drawBoard() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = "#0b1020";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  drawGrid();
+
+  for (let y = 0; y < ROWS; y += 1) {
+    for (let x = 0; x < COLS; x += 1) {
+      const color = board[y][x];
+
+      if (color) {
+        drawCell(ctx, x, y, BLOCK, color);
+      }
+    }
   }
 }
 
@@ -499,7 +503,6 @@ function rotatePiece() {
 
   const rotated = rotateMatrix(currentPiece.matrix);
   const originalX = currentPiece.x;
-
   const kicks = [0, -1, 1, -2, 2];
 
   for (const kick of kicks) {
@@ -520,7 +523,7 @@ function getCanvasCellWidth() {
   return rect.width / COLS;
 }
 
-/* Keyboard */
+/* keyboard */
 
 document.addEventListener("keydown", (event) => {
   if (event.key === "ArrowLeft") {
@@ -554,7 +557,7 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
-/* Mouse + touch canvas control */
+/* mouse + touch */
 
 let pointerActive = false;
 let pointerId = null;
@@ -563,13 +566,17 @@ let pointerStartY = 0;
 let pointerLastX = 0;
 let pointerMoved = false;
 let pointerWasTouch = false;
-let touchHardDropped = false;
-let lastMouseClickTime = 0;
+let hardDropDoneBySwipe = false;
+let lastMouseLeftClickTime = 0;
 
-canvas.addEventListener("contextmenu", (event) => {
-  event.preventDefault();
-  rotatePiece();
-});
+canvas.addEventListener(
+  "contextmenu",
+  (event) => {
+    event.preventDefault();
+    rotatePiece();
+  },
+  { passive: false },
+);
 
 canvas.addEventListener(
   "pointerdown",
@@ -577,6 +584,14 @@ canvas.addEventListener(
     event.preventDefault();
 
     if (!isRunning || isPaused || isGameOver) return;
+
+    /*
+      右键旋转只交给 contextmenu。
+      这里不再 rotate，否则电脑右键会旋转两次。
+    */
+    if (event.pointerType === "mouse" && event.button === 2) {
+      return;
+    }
 
     canvas.setPointerCapture?.(event.pointerId);
 
@@ -587,25 +602,20 @@ canvas.addEventListener(
     pointerLastX = event.clientX;
     pointerMoved = false;
     pointerWasTouch = event.pointerType === "touch";
-    touchHardDropped = false;
-
-    if (event.pointerType === "mouse" && event.button === 2) {
-      rotatePiece();
-      pointerActive = false;
-      return;
-    }
+    hardDropDoneBySwipe = false;
 
     if (event.pointerType === "mouse" && event.button === 0) {
       const now = Date.now();
 
-      if (now - lastMouseClickTime < 280) {
+      if (now - lastMouseLeftClickTime < 280) {
         hardDrop();
-        lastMouseClickTime = 0;
+        lastMouseLeftClickTime = 0;
         pointerActive = false;
+        pointerId = null;
         return;
       }
 
-      lastMouseClickTime = now;
+      lastMouseLeftClickTime = now;
     }
   },
   { passive: false },
@@ -624,7 +634,7 @@ canvas.addEventListener(
     const dxFromLast = event.clientX - pointerLastX;
 
     const cellWidth = getCanvasCellWidth();
-    const horizontalStep = Math.max(18, cellWidth * 0.72);
+    const horizontalStep = Math.max(16, cellWidth * 0.72);
 
     if (Math.abs(dxFromLast) >= horizontalStep) {
       const steps = Math.trunc(dxFromLast / horizontalStep);
@@ -639,13 +649,16 @@ canvas.addEventListener(
       pointerMoved = true;
     }
 
+    /*
+      手机：下滑直接落下。
+      电脑：按住鼠标向下滑，也直接落下。
+    */
     if (
-      pointerWasTouch &&
-      !touchHardDropped &&
+      !hardDropDoneBySwipe &&
       dyFromStart > 72 &&
       Math.abs(dyFromStart) > Math.abs(dxFromStart) * 1.15
     ) {
-      touchHardDropped = true;
+      hardDropDoneBySwipe = true;
       pointerMoved = true;
       hardDrop();
     }
@@ -666,7 +679,7 @@ canvas.addEventListener(
 
     const wasTouch = pointerWasTouch;
     const moved = pointerMoved;
-    const dropped = touchHardDropped;
+    const dropped = hardDropDoneBySwipe;
 
     pointerActive = false;
     pointerId = null;
@@ -675,6 +688,10 @@ canvas.addEventListener(
 
     if (!isRunning || isPaused || isGameOver) return;
 
+    /*
+      手机轻点：旋转。
+      电脑左键单击：不旋转，避免和双击落下冲突。
+    */
     if (wasTouch && !moved && !dropped) {
       rotatePiece();
     }
@@ -692,7 +709,7 @@ canvas.addEventListener(
   { passive: false },
 );
 
-/* Buttons */
+/* buttons */
 
 function bindHoldButton(button, action, repeatDelay = 120) {
   let timer = null;
@@ -734,7 +751,7 @@ pauseBtn.addEventListener("click", togglePause);
 restartBtn.addEventListener("click", restartGame);
 exitBtn.addEventListener("click", exitGame);
 
-/* Prevent iPhone double tap zoom around buttons */
+/* prevent iPhone double tap zoom */
 
 let lastTouchEnd = 0;
 
@@ -752,7 +769,7 @@ document.addEventListener(
   { passive: false },
 );
 
-/* Initial paint */
+/* initial paint */
 
 resetGame();
 isRunning = false;
