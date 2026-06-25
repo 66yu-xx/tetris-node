@@ -4,6 +4,7 @@ const startScreen = document.querySelector('#start-screen')
 const gameShell = document.querySelector('#game-shell')
 const startButton = document.querySelector('#start-game')
 const canvas = document.querySelector('#game')
+canvas.draggable = false
 const ctx = canvas.getContext('2d')
 const nextCanvas = document.querySelector('#next')
 const nextCtx = nextCanvas.getContext('2d')
@@ -404,6 +405,7 @@ function preventBrowserGesture(event) {
 
 document.addEventListener('contextmenu', preventBrowserGesture)
 document.addEventListener('dblclick', preventBrowserGesture, { passive: false, capture: true })
+document.addEventListener('dragstart', preventBrowserGesture, { passive: false, capture: true })
 document.addEventListener('gesturestart', preventBrowserGesture, { passive: false })
 document.addEventListener('gesturechange', preventBrowserGesture, { passive: false })
 document.addEventListener('gestureend', preventBrowserGesture, { passive: false })
@@ -448,6 +450,8 @@ canvas.addEventListener(
 )
 
 canvas.addEventListener('pointerdown', (event) => {
+  event.preventDefault()
+
   if (!gameStarted || paused || gameOver) return
 
   canvas.setPointerCapture(event.pointerId)
@@ -469,6 +473,8 @@ canvas.addEventListener('pointerdown', (event) => {
 })
 
 canvas.addEventListener('pointermove', (event) => {
+  event.preventDefault()
+
   if (!pointerActive || !gameStarted || paused || gameOver) return
 
   const diffFromStartX = event.clientX - pointerStartX
@@ -493,7 +499,9 @@ canvas.addEventListener('pointermove', (event) => {
   }
 })
 
-canvas.addEventListener('pointerup', () => {
+canvas.addEventListener('pointerup', (event) => {
+  event.preventDefault()
+
   if (!pointerActive || !gameStarted || paused || gameOver) return
 
   pointerActive = false
