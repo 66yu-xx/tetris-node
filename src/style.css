@@ -253,6 +253,11 @@ button:active {
   background: linear-gradient(135deg, #7f1d1d, #be123c);
 }
 
+#soundBtn.sound-off {
+  color: #d1d5db;
+  background: linear-gradient(135deg, #374151, #1f2937);
+}
+
 .status-text {
   margin: 0;
   color: var(--muted);
@@ -260,7 +265,7 @@ button:active {
   text-align: center;
 }
 
-/* wider desktop: buttons can be more relaxed */
+/* wider desktop */
 
 @media (min-width: 761px) {
   .game-layout {
@@ -276,7 +281,7 @@ button:active {
   }
 
   .action-controls {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 

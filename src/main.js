@@ -17,6 +17,7 @@ const startBtn = document.querySelector("#startBtn");
 const pauseBtn = document.querySelector("#pauseBtn");
 const restartBtn = document.querySelector("#restartBtn");
 const exitBtn = document.querySelector("#exitBtn");
+const soundBtn = document.querySelector("#soundBtn");
 
 const leftBtn = document.querySelector("#leftBtn");
 const rightBtn = document.querySelector("#rightBtn");
@@ -126,6 +127,116 @@ let isRunning;
 let isPaused;
 let isGameOver;
 
+/* sound */
+
+let audioContext = null;
+let soundEnabled = true;
+let lastMoveSoundTime = 0;
+
+function initAudio() {
+  if (!soundEnabled) return;
+
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+
+  if (!AudioContextClass) return;
+
+  if (!audioContext) {
+    audioContext = new AudioContextClass();
+  }
+
+  if (audioContext.state === "suspended") {
+    audioContext.resume().catch(() => {});
+  }
+}
+
+function playTone({
+  frequency = 440,
+  duration = 0.08,
+  type = "square",
+  volume = 0.05,
+  slideTo = null,
+}) {
+  if (!soundEnabled) return;
+
+  initAudio();
+
+  if (!audioContext || audioContext.state === "closed") return;
+
+  const now = audioContext.currentTime;
+  const oscillator = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+
+  oscillator.type = type;
+  oscillator.frequency.setValueAtTime(frequency, now);
+
+  if (slideTo) {
+    oscillator.frequency.exponentialRampToValueAtTime(slideTo, now + duration);
+  }
+
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(volume, now + 0.008);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+  oscillator.connect(gain);
+  gain.connect(audioContext.destination);
+
+  oscillator.start(now);
+  oscillator.stop(now + duration + 0.02);
+}
+
+function playStartSound() {
+  playTone({ frequency: 392, slideTo: 784, duration: 0.13, type: "triangle", volume: 0.06 });
+}
+
+function playMoveSound() {
+  const now = Date.now();
+
+  if (now - lastMoveSoundTime < 45) return;
+
+  lastMoveSoundTime = now;
+  playTone({ frequency: 180, duration: 0.035, type: "square", volume: 0.025 });
+}
+
+function playRotateSound() {
+  playTone({ frequency: 520, duration: 0.055, type: "square", volume: 0.04 });
+}
+
+function playHardDropSound() {
+  playTone({ frequency: 150, slideTo: 70, duration: 0.11, type: "sawtooth", volume: 0.07 });
+}
+
+function playClearSound(cleared) {
+  const base = cleared >= 4 ? 620 : 460;
+  const volume = cleared >= 4 ? 0.075 : 0.055;
+
+  playTone({ frequency: base, duration: 0.08, type: "triangle", volume });
+
+  window.setTimeout(() => {
+    playTone({ frequency: base * 1.35, duration: 0.09, type: "triangle", volume });
+  }, 75);
+}
+
+function playGameOverSound() {
+  playTone({ frequency: 260, slideTo: 90, duration: 0.35, type: "sawtooth", volume: 0.075 });
+}
+
+function toggleSound() {
+  soundEnabled = !soundEnabled;
+  updateSoundButton();
+
+  if (soundEnabled) {
+    initAudio();
+    playTone({ frequency: 520, duration: 0.08, type: "triangle", volume: 0.055 });
+  }
+}
+
+function updateSoundButton() {
+  soundBtn.textContent = soundEnabled ? "音效：开" : "音效：关";
+  soundBtn.classList.toggle("sound-off", !soundEnabled);
+}
+
+/* game setup */
+
 function createBoard() {
   return Array.from({ length: ROWS }, () => Array(COLS).fill(null));
 }
@@ -169,15 +280,24 @@ function resetGame() {
 }
 
 function startGame() {
+  initAudio();
+
   startScreen.classList.add("hidden");
   gameScreen.classList.remove("hidden");
+
   resetGame();
+  playStartSound();
+
   cancelAnimationFrame(animationId);
   animationId = requestAnimationFrame(update);
 }
 
 function restartGame() {
+  initAudio();
+
   resetGame();
+  playStartSound();
+
   cancelAnimationFrame(animationId);
   animationId = requestAnimationFrame(update);
 }
@@ -186,7 +306,9 @@ function exitGame() {
   isRunning = false;
   isPaused = false;
   isGameOver = false;
+
   cancelAnimationFrame(animationId);
+
   startScreen.classList.remove("hidden");
   gameScreen.classList.add("hidden");
 }
@@ -194,9 +316,18 @@ function exitGame() {
 function togglePause() {
   if (!isRunning || isGameOver) return;
 
+  initAudio();
+
   isPaused = !isPaused;
   pauseBtn.textContent = isPaused ? "继续" : "暂停";
   updateStatus(isPaused ? "已暂停" : "游戏中");
+
+  playTone({
+    frequency: isPaused ? 220 : 440,
+    duration: 0.07,
+    type: "triangle",
+    volume: 0.04,
+  });
 
   if (!isPaused) {
     lastTime = 0;
@@ -217,7 +348,7 @@ function update(time = 0) {
   dropCounter += delta;
 
   if (dropCounter > dropInterval) {
-    softDrop();
+    softDrop(false);
   }
 
   draw();
@@ -415,11 +546,14 @@ function clearLines() {
 
   if (cleared > 0) {
     const lineScores = [0, 100, 300, 500, 800];
+
     score += lineScores[cleared] * level;
     lines += cleared;
     level = Math.floor(lines / 10) + 1;
     dropInterval = Math.max(120, 850 - (level - 1) * 70);
+
     updateHud();
+    playClearSound(cleared);
   }
 }
 
@@ -438,14 +572,19 @@ function gameOver() {
   isGameOver = true;
   isRunning = false;
   updateStatus("游戏结束");
+  playGameOverSound();
   draw();
 }
 
-function softDrop() {
+function softDrop(withSound = false) {
   if (!isRunning || isPaused || isGameOver) return;
 
   if (!collide(currentPiece, 0, 1)) {
     currentPiece.y += 1;
+
+    if (withSound) {
+      playTone({ frequency: 120, duration: 0.035, type: "square", volume: 0.025 });
+    }
   } else {
     mergePiece();
     clearLines();
@@ -468,9 +607,12 @@ function hardDrop() {
   score += distance * 2;
   updateHud();
 
+  playHardDropSound();
+
   mergePiece();
   clearLines();
   spawnNextPiece();
+
   dropCounter = 0;
   draw();
 }
@@ -480,6 +622,7 @@ function movePiece(direction) {
 
   if (!collide(currentPiece, direction, 0)) {
     currentPiece.x += direction;
+    playMoveSound();
     draw();
   }
 }
@@ -510,6 +653,7 @@ function rotatePiece() {
 
     if (!collide(currentPiece, 0, 0, rotated)) {
       currentPiece.matrix = rotated;
+      playRotateSound();
       draw();
       return;
     }
@@ -538,7 +682,7 @@ document.addEventListener("keydown", (event) => {
 
   if (event.key === "ArrowDown") {
     event.preventDefault();
-    softDrop();
+    softDrop(true);
   }
 
   if (event.key === "ArrowUp") {
@@ -582,6 +726,8 @@ canvas.addEventListener(
   "pointerdown",
   (event) => {
     event.preventDefault();
+
+    initAudio();
 
     if (!isRunning || isPaused || isGameOver) return;
 
@@ -716,6 +862,7 @@ function bindHoldButton(button, action, repeatDelay = 120) {
 
   const start = (event) => {
     event.preventDefault();
+    initAudio();
     action();
 
     timer = window.setInterval(() => {
@@ -743,7 +890,12 @@ bindHoldButton(rightBtn, () => movePiece(1));
 bindHoldButton(dropBtn, hardDrop, 220);
 
 rotateBtn.addEventListener("click", () => {
+  initAudio();
   rotatePiece();
+});
+
+soundBtn.addEventListener("click", () => {
+  toggleSound();
 });
 
 startBtn.addEventListener("click", startGame);
@@ -771,6 +923,7 @@ document.addEventListener(
 
 /* initial paint */
 
+updateSoundButton();
 resetGame();
 isRunning = false;
 draw();
