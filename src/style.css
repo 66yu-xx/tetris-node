@@ -247,6 +247,7 @@ h2 {
   background: #111827;
 }
 
+/* 手机竖屏布局 */
 @media (max-width: 760px) {
   html,
   body {
@@ -255,7 +256,8 @@ h2 {
 
   #app {
     align-items: flex-start;
-    padding: 8px;
+    justify-content: center;
+    padding: 6px;
   }
 
   .start-card {
@@ -273,72 +275,85 @@ h2 {
   .game-shell {
     width: 100%;
     grid-template-columns: 1fr;
-    gap: 8px;
+    gap: 6px;
   }
 
   .game-panel {
-    padding: 10px;
-    border-radius: 20px;
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 8px;
+    border-radius: 18px;
   }
 
   .game-header {
-    margin-bottom: 8px;
+    margin-bottom: 6px;
   }
 
-  h1 {
-    font-size: 22px;
+  .game-header h1 {
+    font-size: 20px;
   }
 
   #status {
-    padding: 7px 11px;
-    font-size: 15px;
+    padding: 6px 10px;
+    font-size: 14px;
   }
 
   /*
-    手机重点：
-    棋盘高度 = 宽度 x 2
-    所以这里用视口高度反推棋盘宽度，
-    让“下一个”和分数能露出来。
+    手机关键调整：
+    俄罗斯方块棋盘高度是宽度的 2 倍。
+    所以手机版把棋盘压小，确保下面能看到“下一个”和分数。
   */
   #game {
-    width: min(88vw, 300px, calc((100dvh - 250px) / 2));
-    min-width: 230px;
+    width: min(68vw, 250px);
     margin: 0 auto;
+    border-radius: 10px;
   }
 
   .side-panel {
-    grid-template-columns: 132px 1fr;
-    gap: 8px;
+    width: min(100%, 360px);
+    margin: 0 auto;
+    grid-template-columns: 118px 1fr;
+    gap: 6px;
     align-items: stretch;
   }
 
   .side-panel .card {
-    padding: 10px;
-    border-radius: 16px;
+    padding: 8px;
+    border-radius: 14px;
   }
 
   .side-panel .card:first-child {
     grid-column: 1;
   }
 
+  .side-panel .card:first-child h2 {
+    font-size: 16px;
+    margin-bottom: 6px;
+  }
+
+  #next {
+    width: 96px;
+    height: 96px;
+  }
+
   .stats {
     grid-column: 2;
-    gap: 6px;
+    gap: 4px;
   }
 
   .stats div {
     display: grid;
     grid-template-columns: 1fr auto;
-    gap: 8px;
+    gap: 6px;
+  }
+
+  .stats span {
+    font-size: 13px;
   }
 
   .stats strong {
-    font-size: 20px;
-  }
-
-  #next {
-    width: 104px;
-    height: 104px;
+    font-size: 18px;
   }
 
   .controls-help,
@@ -351,15 +366,15 @@ h2 {
     position: sticky;
     bottom: 0;
     grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    padding: 8px 0;
+    gap: 6px;
+    padding: 6px 0;
     background: linear-gradient(to top, #05070b 80%, transparent);
   }
 
   .mobile-controls button {
-    padding: 12px 8px;
-    font-size: 14px;
-    border-radius: 10px;
+    padding: 10px 6px;
+    font-size: 13px;
+    border-radius: 9px;
   }
 
   #quit {
@@ -367,18 +382,23 @@ h2 {
   }
 }
 
-@media (max-width: 380px) {
+/* 小屏手机再压一点 */
+@media (max-width: 390px) {
   #game {
-    width: min(86vw, calc((100dvh - 260px) / 2));
-    min-width: 210px;
-  }
-
-  #next {
-    width: 96px;
-    height: 96px;
+    width: min(64vw, 230px);
   }
 
   .side-panel {
-    grid-template-columns: 120px 1fr;
+    grid-template-columns: 110px 1fr;
+  }
+
+  #next {
+    width: 88px;
+    height: 88px;
+  }
+
+  .mobile-controls button {
+    padding: 9px 5px;
+    font-size: 12px;
   }
 }
