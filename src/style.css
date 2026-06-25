@@ -1,42 +1,61 @@
+:root {
+  --bg: #0f1220;
+  --panel: #181d2f;
+  --panel-2: #20263c;
+  --border: rgba(255, 255, 255, 0.12);
+  --text: #f5f7ff;
+  --muted: #aab2d5;
+  --accent: #7dd3fc;
+  --accent-2: #a78bfa;
+  --danger: #fb7185;
+  --shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
+}
+
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html,
 body {
-  margin: 0;
   width: 100%;
   min-height: 100%;
+  margin: 0;
   overflow-x: hidden;
-  background: radial-gradient(circle at top, #1f2a44 0%, #0a0d14 55%, #05070b 100%);
-  color: #f8fafc;
-  font-family: Arial, "Microsoft YaHei", sans-serif;
-  touch-action: manipulation;
-  -webkit-text-size-adjust: 100%;
-  -webkit-tap-highlight-color: transparent;
-}
-
-body {
   overscroll-behavior: none;
+  background:
+    radial-gradient(circle at top left, rgba(125, 211, 252, 0.16), transparent 36rem),
+    radial-gradient(circle at bottom right, rgba(167, 139, 250, 0.14), transparent 32rem),
+    var(--bg);
+  color: var(--text);
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Microsoft YaHei", sans-serif;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-button {
-  border: 0;
-  border-radius: 12px;
-  padding: 14px 16px;
-  background: #2563eb;
-  color: white;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-  touch-action: manipulation;
+button,
+canvas {
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
 }
 
+button {
+  border: 0;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--panel-2), #29314d);
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px var(--border);
+  touch-action: manipulation;
+}
+
 button:active {
-  transform: scale(0.96);
+  transform: translateY(1px) scale(0.99);
 }
 
 .hidden {
@@ -44,369 +63,342 @@ button:active {
 }
 
 #app {
-  min-height: 100vh;
   min-height: 100dvh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+}
+
+/* Start screen */
+
+.start-screen {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
   padding: 24px;
 }
 
-.start-screen {
-  width: min(920px, 100%);
-  display: flex;
-  justify-content: center;
-}
-
 .start-card {
-  width: min(720px, 100%);
-  padding: 36px;
+  width: min(92vw, 520px);
+  padding: 30px;
   border-radius: 28px;
-  background: rgba(15, 23, 42, 0.92);
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+  background: rgba(24, 29, 47, 0.86);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
   text-align: center;
-}
-
-.eyebrow {
-  color: #93c5fd;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin-bottom: 12px;
+  backdrop-filter: blur(16px);
 }
 
 .start-card h1 {
-  font-size: 48px;
-  margin-bottom: 12px;
+  margin: 0 0 16px;
+  font-size: clamp(36px, 9vw, 64px);
+  line-height: 1;
 }
 
-.intro {
-  color: #cbd5e1;
-  font-size: 18px;
-  margin-bottom: 24px;
+.start-card p {
+  margin: 8px 0;
+  color: var(--muted);
+  line-height: 1.5;
 }
 
-.start-button {
-  min-width: 180px;
+.primary-btn {
+  width: 100%;
+  margin-top: 24px;
+  padding: 16px 20px;
   font-size: 20px;
-  padding: 16px 24px;
-  margin-bottom: 28px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #07111f;
 }
 
-.start-help {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-  text-align: left;
-}
+/* Game screen */
 
-.start-help div {
+.game-screen {
+  min-height: 100dvh;
   padding: 18px;
-  border-radius: 18px;
-  background: rgba(15, 23, 42, 0.9);
-  border: 1px solid rgba(148, 163, 184, 0.16);
-}
-
-.start-help h2 {
-  margin-bottom: 10px;
-}
-
-.start-help p {
-  color: #cbd5e1;
-  line-height: 1.7;
-}
-
-.game-shell {
-  display: grid;
-  grid-template-columns: auto 280px;
-  gap: 24px;
-  align-items: start;
-}
-
-.game-panel,
-.side-panel .card {
-  background: rgba(15, 23, 42, 0.9);
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
-}
-
-.game-panel {
-  padding: 18px;
-  border-radius: 24px;
 }
 
 .game-header {
+  width: min(100%, 920px);
+  margin: 0 auto 14px;
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 14px;
+  align-items: center;
 }
 
-h1,
-h2,
-p {
+.game-header h1 {
   margin: 0;
+  font-size: clamp(24px, 4vw, 38px);
 }
 
-h1 {
-  font-size: 28px;
+.game-header p {
+  margin: 4px 0 0;
+  color: var(--muted);
 }
 
-h2 {
+/*
+  关键：
+  这里只让 .hud-panel / .board-panel / .control-panel 作为 game-area 的直接子元素。
+  不使用 display: contents。
+  电脑端：棋盘左边，HUD 和按钮右边。
+  手机端：HUD 上，棋盘中，按钮下。
+*/
+
+.game-area {
+  width: min(100%, 920px);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(300px, 420px) minmax(230px, 280px);
+  grid-template-areas:
+    "board hud"
+    "board controls";
+  gap: 16px;
+  align-items: start;
+  justify-content: center;
+}
+
+.hud-panel {
+  grid-area: hud;
+  display: grid;
+  gap: 14px;
+}
+
+.board-panel {
+  grid-area: board;
+  display: grid;
+  place-items: center;
+}
+
+.control-panel {
+  grid-area: controls;
+  display: grid;
+  gap: 12px;
+}
+
+.next-card,
+.score-card,
+.control-panel {
+  border-radius: 22px;
+  padding: 14px;
+  background: rgba(24, 29, 47, 0.88);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.next-card h2 {
+  margin: 0 0 10px;
   font-size: 18px;
-  margin-bottom: 12px;
 }
 
-#status {
-  padding: 8px 12px;
-  border-radius: 999px;
-  background: rgba(34, 197, 94, 0.15);
-  color: #86efac;
-  font-weight: 700;
-}
-
-#game {
+#nextCanvas {
+  width: 120px;
+  height: 120px;
   display: block;
-  width: min(78vw, 300px);
-  height: auto;
-  border-radius: 12px;
-  border: 2px solid rgba(148, 163, 184, 0.35);
+  margin: 0 auto;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.2);
   touch-action: none;
-  user-select: none;
-  -webkit-user-select: none;
-  -webkit-touch-callout: none;
+}
+
+.score-card {
+  display: grid;
+  gap: 10px;
+}
+
+.score-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.score-row span {
+  color: var(--muted);
+}
+
+.score-row strong {
+  font-size: 22px;
+}
+
+#gameCanvas {
+  width: min(100%, 420px);
+  aspect-ratio: 1 / 2;
+  height: auto;
+  display: block;
+  border-radius: 22px;
+  background: #0b1020;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  touch-action: none;
   cursor: grab;
 }
 
-#game:active {
+#gameCanvas:active {
   cursor: grabbing;
 }
 
-.side-panel {
+.touch-controls {
   display: grid;
-  gap: 16px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
 }
 
-.card {
-  border-radius: 20px;
-  padding: 16px;
+.touch-controls button {
+  min-height: 52px;
 }
 
-#next {
-  display: block;
-  width: 120px;
-  height: 120px;
-  border-radius: 12px;
-  border: 1px solid rgba(148, 163, 184, 0.25);
-}
-
-.stats {
+.action-controls {
   display: grid;
-  gap: 12px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
 }
 
-.stats div {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.action-controls button {
+  min-height: 48px;
 }
 
-.stats span,
-.controls-help p,
-.touch-help p {
-  color: #cbd5e1;
+#exitBtn {
+  color: #ffe4e6;
+  background: linear-gradient(135deg, #7f1d1d, #be123c);
 }
 
-.stats strong {
-  font-size: 24px;
-}
+/* Mobile layout */
 
-.controls-help,
-.touch-help {
-  display: grid;
-  gap: 6px;
-}
-
-.mobile-controls {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-}
-
-#drop {
-  background: #dc2626;
-}
-
-#pause {
-  background: #7c3aed;
-}
-
-#restart {
-  background: #475569;
-}
-
-#quit {
-  grid-column: 1 / -1;
-  background: #111827;
-}
-
-/* 手机竖屏布局：把“下一个 + 分数”移动到棋盘上方 */
 @media (max-width: 760px) {
-  html,
-  body {
-    overflow-x: hidden;
-  }
-
-  #app {
-    align-items: flex-start;
-    justify-content: center;
-    padding: 6px;
-  }
-
-  .start-card {
-    padding: 24px;
-  }
-
-  .start-card h1 {
-    font-size: 36px;
-  }
-
-  .start-help {
-    grid-template-columns: 1fr;
-  }
-
-  .game-shell {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  /*
-    关键：手机版把 side-panel 放到棋盘上方。
-    这样下一个方块和分数一定先出现。
-  */
-  .side-panel {
-    order: -1;
-    width: min(100%, 390px);
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: 112px 1fr;
-    gap: 6px;
-    align-items: stretch;
-  }
-
-  .side-panel .card {
-    padding: 8px;
-    border-radius: 14px;
-  }
-
-  .side-panel .card:first-child {
-    grid-column: 1;
-  }
-
-  .side-panel .card:first-child h2 {
-    font-size: 15px;
-    margin-bottom: 6px;
-  }
-
-  #next {
-    width: 88px;
-    height: 88px;
-  }
-
-  .stats {
-    grid-column: 2;
-    gap: 4px;
-  }
-
-  .stats div {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 6px;
-  }
-
-  .stats span {
-    font-size: 13px;
-  }
-
-  .stats strong {
-    font-size: 18px;
-  }
-
-  .game-panel {
-    width: fit-content;
-    max-width: 100%;
-    margin: 0 auto;
-    padding: 8px;
-    border-radius: 18px;
+  .game-screen {
+    min-height: 100dvh;
+    padding:
+      max(10px, env(safe-area-inset-top))
+      10px
+      max(12px, env(safe-area-inset-bottom));
   }
 
   .game-header {
-    margin-bottom: 6px;
-  }
-
-  .game-header h1 {
-    font-size: 20px;
-  }
-
-  #status {
-    padding: 6px 10px;
-    font-size: 14px;
-  }
-
-  /*
-    棋盘宽度不要追求最大，优先保证手机上能看到信息区。
-  */
-  #game {
-    width: min(72vw, 260px);
-    margin: 0 auto;
-    border-radius: 10px;
-  }
-
-  .controls-help,
-  .touch-help {
     display: none;
   }
 
-  .mobile-controls {
-    grid-column: 1 / -1;
+  .game-area {
+    width: 100%;
+    min-height: 100dvh;
+    margin: 0;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 6px;
-    padding: 6px 0;
-    background: linear-gradient(to top, #05070b 80%, transparent);
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "hud"
+      "board"
+      "controls";
+    grid-template-rows: auto 1fr auto;
+    gap: 8px;
+    align-items: stretch;
+    justify-content: stretch;
   }
 
-  .mobile-controls button {
-    padding: 10px 6px;
+  .hud-panel {
+    grid-area: hud;
+    display: grid;
+    grid-template-columns: 108px 1fr;
+    gap: 8px;
+    align-items: stretch;
+  }
+
+  .next-card,
+  .score-card,
+  .control-panel {
+    border-radius: 16px;
+    padding: 8px;
+    box-shadow: none;
+  }
+
+  .next-card h2 {
+    margin-bottom: 5px;
     font-size: 13px;
-    border-radius: 9px;
+    text-align: center;
   }
 
-  #quit {
-    grid-column: 1 / -1;
-  }
-}
-
-@media (max-width: 390px) {
-  .side-panel {
-    grid-template-columns: 104px 1fr;
-  }
-
-  #next {
+  #nextCanvas {
     width: 82px;
     height: 82px;
   }
 
-  #game {
-    width: min(68vw, 240px);
+  .score-card {
+    gap: 5px;
   }
 
-  .mobile-controls button {
-    padding: 9px 5px;
+  .score-row {
+    min-height: 25px;
+    padding: 4px 8px;
+    border-radius: 10px;
+  }
+
+  .score-row span {
     font-size: 12px;
+  }
+
+  .score-row strong {
+    font-size: 17px;
+  }
+
+  .board-panel {
+    grid-area: board;
+    min-height: 0;
+    display: grid;
+    place-items: center;
+  }
+
+  #gameCanvas {
+    width: min(92vw, calc((100dvh - 190px) / 2));
+    max-width: 390px;
+    height: auto;
+    border-radius: 18px;
+  }
+
+  .control-panel {
+    grid-area: controls;
+    gap: 8px;
+  }
+
+  .touch-controls {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+
+  .touch-controls button {
+    min-height: 44px;
+    font-size: 15px;
+    border-radius: 12px;
+  }
+
+  .action-controls {
+    gap: 6px;
+  }
+
+  .action-controls button {
+    min-height: 40px;
+    font-size: 14px;
+    border-radius: 12px;
+  }
+}
+
+@media (max-width: 380px) {
+  .hud-panel {
+    grid-template-columns: 96px 1fr;
+  }
+
+  #nextCanvas {
+    width: 72px;
+    height: 72px;
+  }
+
+  #gameCanvas {
+    width: min(90vw, calc((100dvh - 178px) / 2));
+  }
+
+  .touch-controls button {
+    min-height: 40px;
+    font-size: 14px;
+  }
+
+  .action-controls button {
+    min-height: 36px;
+    font-size: 13px;
   }
 }
