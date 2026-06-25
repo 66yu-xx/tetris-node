@@ -13,6 +13,7 @@ body {
   font-family: Arial, "Microsoft YaHei", sans-serif;
   touch-action: manipulation;
   -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -31,6 +32,7 @@ button {
   touch-action: manipulation;
   user-select: none;
   -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 button:active {
@@ -246,9 +248,15 @@ h2 {
 }
 
 @media (max-width: 760px) {
+  html,
+  body {
+    overflow: hidden;
+  }
+
   #app {
     align-items: flex-start;
-    padding: 12px;
+    padding: 8px;
+    overflow: hidden;
   }
 
   .start-card {
@@ -266,15 +274,15 @@ h2 {
   .game-shell {
     width: 100%;
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 10px;
   }
 
   .game-panel {
-    padding: 12px;
+    padding: 10px;
   }
 
   .game-header {
-    margin-bottom: 10px;
+    margin-bottom: 8px;
   }
 
   h1 {
@@ -282,12 +290,13 @@ h2 {
   }
 
   #game {
-    width: min(92vw, 300px);
+    width: min(94vw, 330px);
     margin: 0 auto;
   }
 
   .side-panel {
     grid-template-columns: 1fr;
+    gap: 10px;
   }
 
   .controls-help {
@@ -295,13 +304,17 @@ h2 {
   }
 
   .touch-help {
-    display: block;
+    display: none;
+  }
+
+  .card {
+    padding: 12px;
   }
 
   .mobile-controls {
     position: sticky;
     bottom: 0;
-    padding: 12px 0;
+    padding: 8px 0;
     background: linear-gradient(to top, #05070b 80%, transparent);
   }
 }

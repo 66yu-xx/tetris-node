@@ -392,25 +392,57 @@ let pointerLastX = 0
 let pointerMoved = false
 let pointerType = 'mouse'
 let lastTouchEndTime = 0
+let lastPointerWasTouch = false
 
 const horizontalMoveThreshold = 24
 const verticalDropThreshold = 70
 const tapThreshold = 10
 
-document.addEventListener('contextmenu', (event) => {
+function preventBrowserGesture(event) {
   event.preventDefault()
-})
+}
+
+document.addEventListener('contextmenu', preventBrowserGesture)
+document.addEventListener('dblclick', preventBrowserGesture, { passive: false, capture: true })
+document.addEventListener('gesturestart', preventBrowserGesture, { passive: false })
+document.addEventListener('gesturechange', preventBrowserGesture, { passive: false })
+document.addEventListener('gestureend', preventBrowserGesture, { passive: false })
 
 document.addEventListener(
   'touchend',
   (event) => {
     const now = Date.now()
 
-    if (now - lastTouchEndTime <= 350) {
+    if (now - lastTouchEndTime <= 500) {
       event.preventDefault()
+      event.stopPropagation()
     }
 
     lastTouchEndTime = now
+  },
+  { passive: false, capture: true },
+)
+
+canvas.addEventListener(
+  'touchstart',
+  (event) => {
+    event.preventDefault()
+  },
+  { passive: false },
+)
+
+canvas.addEventListener(
+  'touchmove',
+  (event) => {
+    event.preventDefault()
+  },
+  { passive: false },
+)
+
+canvas.addEventListener(
+  'touchend',
+  (event) => {
+    event.preventDefault()
   },
   { passive: false },
 )
@@ -426,6 +458,7 @@ canvas.addEventListener('pointerdown', (event) => {
   pointerLastX = event.clientX
   pointerMoved = false
   pointerType = event.pointerType
+  lastPointerWasTouch = event.pointerType !== 'mouse'
 
   if (event.pointerType === 'mouse' && event.button === 2) {
     event.preventDefault()
@@ -471,10 +504,12 @@ canvas.addEventListener('pointerup', () => {
 })
 
 canvas.addEventListener('dblclick', (event) => {
+  event.preventDefault()
+
   if (!gameStarted || paused || gameOver) return
+  if (lastPointerWasTouch) return
   if (pointerType !== 'mouse') return
 
-  event.preventDefault()
   hardDrop()
 })
 
