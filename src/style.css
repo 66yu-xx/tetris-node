@@ -252,7 +252,7 @@ h2 {
   background: #111827;
 }
 
-/* 手机竖屏布局：把“下一个 + 分数”移动到棋盘上方 */
+/* 手机竖屏布局 */
 @media (max-width: 760px) {
   html,
   body {
@@ -277,34 +277,41 @@ h2 {
     grid-template-columns: 1fr;
   }
 
-  .game-shell {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
   /*
-    关键：手机版把 side-panel 放到棋盘上方。
-    这样下一个方块和分数一定先出现。
+    手机端核心修正：
+    让 side-panel 本身消失，只把里面的几个模块拿出来参与总布局。
+    顺序固定为：
+    下一个 + 分数
+    棋盘
+    按钮
   */
-  .side-panel {
-    order: -1;
+  .game-shell {
     width: min(100%, 390px);
     margin: 0 auto;
     display: grid;
-    grid-template-columns: 112px 1fr;
-    gap: 6px;
-    align-items: stretch;
+    grid-template-columns: 116px 1fr;
+    grid-template-areas:
+      "next stats"
+      "game game"
+      "buttons buttons";
+    gap: 8px;
+    align-items: start;
+  }
+
+  .side-panel {
+    display: contents;
   }
 
   .side-panel .card {
     padding: 8px;
     border-radius: 14px;
+    background: rgba(15, 23, 42, 0.9);
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.25);
   }
 
   .side-panel .card:first-child {
-    grid-column: 1;
+    grid-area: next;
   }
 
   .side-panel .card:first-child h2 {
@@ -312,13 +319,8 @@ h2 {
     margin-bottom: 6px;
   }
 
-  #next {
-    width: 88px;
-    height: 88px;
-  }
-
   .stats {
-    grid-column: 2;
+    grid-area: stats;
     gap: 4px;
   }
 
@@ -336,7 +338,13 @@ h2 {
     font-size: 18px;
   }
 
+  #next {
+    width: 88px;
+    height: 88px;
+  }
+
   .game-panel {
+    grid-area: game;
     width: fit-content;
     max-width: 100%;
     margin: 0 auto;
@@ -357,22 +365,19 @@ h2 {
     font-size: 14px;
   }
 
-  /*
-    棋盘宽度不要追求最大，优先保证手机上能看到信息区。
-  */
   #game {
-    width: min(72vw, 260px);
+    width: min(78vw, 280px);
     margin: 0 auto;
     border-radius: 10px;
   }
 
   .controls-help,
   .touch-help {
-    display: none;
+    display: none !important;
   }
 
   .mobile-controls {
-    grid-column: 1 / -1;
+    grid-area: buttons;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 6px;
@@ -392,8 +397,8 @@ h2 {
 }
 
 @media (max-width: 390px) {
-  .side-panel {
-    grid-template-columns: 104px 1fr;
+  .game-shell {
+    grid-template-columns: 108px 1fr;
   }
 
   #next {
@@ -402,7 +407,7 @@ h2 {
   }
 
   #game {
-    width: min(68vw, 240px);
+    width: min(76vw, 260px);
   }
 
   .mobile-controls button {
