@@ -250,13 +250,12 @@ h2 {
 @media (max-width: 760px) {
   html,
   body {
-    overflow: hidden;
+    overflow-x: hidden;
   }
 
   #app {
     align-items: flex-start;
     padding: 8px;
-    overflow: hidden;
   }
 
   .start-card {
@@ -274,11 +273,12 @@ h2 {
   .game-shell {
     width: 100%;
     grid-template-columns: 1fr;
-    gap: 10px;
+    gap: 8px;
   }
 
   .game-panel {
     padding: 10px;
+    border-radius: 20px;
   }
 
   .game-header {
@@ -289,32 +289,96 @@ h2 {
     font-size: 22px;
   }
 
+  #status {
+    padding: 7px 11px;
+    font-size: 15px;
+  }
+
+  /*
+    手机重点：
+    棋盘高度 = 宽度 x 2
+    所以这里用视口高度反推棋盘宽度，
+    让“下一个”和分数能露出来。
+  */
   #game {
-    width: min(94vw, 330px);
+    width: min(88vw, 300px, calc((100dvh - 250px) / 2));
+    min-width: 230px;
     margin: 0 auto;
   }
 
   .side-panel {
-    grid-template-columns: 1fr;
-    gap: 10px;
+    grid-template-columns: 132px 1fr;
+    gap: 8px;
+    align-items: stretch;
   }
 
-  .controls-help {
-    display: none;
+  .side-panel .card {
+    padding: 10px;
+    border-radius: 16px;
   }
 
+  .side-panel .card:first-child {
+    grid-column: 1;
+  }
+
+  .stats {
+    grid-column: 2;
+    gap: 6px;
+  }
+
+  .stats div {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+  }
+
+  .stats strong {
+    font-size: 20px;
+  }
+
+  #next {
+    width: 104px;
+    height: 104px;
+  }
+
+  .controls-help,
   .touch-help {
     display: none;
   }
 
-  .card {
-    padding: 12px;
-  }
-
   .mobile-controls {
+    grid-column: 1 / -1;
     position: sticky;
     bottom: 0;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
     padding: 8px 0;
     background: linear-gradient(to top, #05070b 80%, transparent);
+  }
+
+  .mobile-controls button {
+    padding: 12px 8px;
+    font-size: 14px;
+    border-radius: 10px;
+  }
+
+  #quit {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 380px) {
+  #game {
+    width: min(86vw, calc((100dvh - 260px) / 2));
+    min-width: 210px;
+  }
+
+  #next {
+    width: 96px;
+    height: 96px;
+  }
+
+  .side-panel {
+    grid-template-columns: 120px 1fr;
   }
 }
