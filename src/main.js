@@ -1,6 +1,5 @@
 import './style.css'
 
-const app = document.querySelector('#app')
 const startScreen = document.querySelector('#start-screen')
 const gameShell = document.querySelector('#game-shell')
 const startButton = document.querySelector('#start-game')
@@ -330,6 +329,7 @@ function quitGame() {
   gameStarted = false
   paused = false
   gameOver = false
+  pointerActive = false
   startScreen.classList.remove('hidden')
   gameShell.classList.add('hidden')
   document.querySelector('#status').textContent = '游戏中'
@@ -391,6 +391,7 @@ let pointerStartY = 0
 let pointerLastX = 0
 let pointerMoved = false
 let pointerType = 'mouse'
+let lastTouchEndTime = 0
 
 const horizontalMoveThreshold = 24
 const verticalDropThreshold = 70
@@ -399,6 +400,20 @@ const tapThreshold = 10
 document.addEventListener('contextmenu', (event) => {
   event.preventDefault()
 })
+
+document.addEventListener(
+  'touchend',
+  (event) => {
+    const now = Date.now()
+
+    if (now - lastTouchEndTime <= 350) {
+      event.preventDefault()
+    }
+
+    lastTouchEndTime = now
+  },
+  { passive: false },
+)
 
 canvas.addEventListener('pointerdown', (event) => {
   if (!gameStarted || paused || gameOver) return
@@ -457,11 +472,10 @@ canvas.addEventListener('pointerup', () => {
 
 canvas.addEventListener('dblclick', (event) => {
   if (!gameStarted || paused || gameOver) return
+  if (pointerType !== 'mouse') return
 
-  if (event.pointerType === 'mouse' || event.detail >= 2) {
-    event.preventDefault()
-    hardDrop()
-  }
+  event.preventDefault()
+  hardDrop()
 })
 
 canvas.addEventListener('pointercancel', () => {
