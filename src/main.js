@@ -1,76 +1,30 @@
-import "./style.css";
+import './style.css'
 
-const COLS = 10;
-const ROWS = 20;
-const BLOCK = 30;
+const startScreen = document.querySelector('#start-screen')
+const gameShell = document.querySelector('#game-shell')
+const startButton = document.querySelector('#start-game')
+const canvas = document.querySelector('#game')
+canvas.draggable = false
+const ctx = canvas.getContext('2d')
+const nextCanvas = document.querySelector('#next')
+const nextCtx = nextCanvas.getContext('2d')
 
-const canvas = document.querySelector("#gameCanvas");
-const ctx = canvas.getContext("2d");
+const COLS = 10
+const ROWS = 20
+const BLOCK = 30
 
-const nextCanvas = document.querySelector("#nextCanvas");
-const nextCtx = nextCanvas.getContext("2d");
-
-const startScreen = document.querySelector("#startScreen");
-const gameScreen = document.querySelector("#gameScreen");
-
-const startBtn = document.querySelector("#startBtn");
-const pauseBtn = document.querySelector("#pauseBtn");
-const restartBtn = document.querySelector("#restartBtn");
-const exitBtn = document.querySelector("#exitBtn");
-
-const leftBtn = document.querySelector("#leftBtn");
-const rightBtn = document.querySelector("#rightBtn");
-const rotateBtn = document.querySelector("#rotateBtn");
-const dropBtn = document.querySelector("#dropBtn");
-
-const scoreText = document.querySelector("#scoreText");
-const linesText = document.querySelector("#linesText");
-const levelText = document.querySelector("#levelText");
-const statusText = document.querySelector("#statusText");
-
-canvas.width = COLS * BLOCK;
-canvas.height = ROWS * BLOCK;
-
-canvas.draggable = false;
-nextCanvas.draggable = false;
-
-document.addEventListener("dragstart", (event) => {
-  event.preventDefault();
-});
-
-document.addEventListener(
-  "gesturestart",
-  (event) => {
-    event.preventDefault();
-  },
-  { passive: false },
-);
-
-document.addEventListener(
-  "gesturechange",
-  (event) => {
-    event.preventDefault();
-  },
-  { passive: false },
-);
-
-document.addEventListener(
-  "gestureend",
-  (event) => {
-    event.preventDefault();
-  },
-  { passive: false },
-);
+canvas.width = COLS * BLOCK
+canvas.height = ROWS * BLOCK
 
 const COLORS = {
-  I: "#67e8f9",
-  J: "#60a5fa",
-  L: "#fb923c",
-  O: "#facc15",
-  S: "#4ade80",
-  T: "#c084fc",
-  Z: "#fb7185",
-};
+  I: '#00d9ff',
+  J: '#2f6bff',
+  L: '#ff9f1c',
+  O: '#ffd500',
+  S: '#2ee66b',
+  T: '#a855f7',
+  Z: '#ff3b5c',
+}
 
 const SHAPES = {
   I: [
@@ -108,652 +62,477 @@ const SHAPES = {
     [0, 1, 1],
     [0, 0, 0],
   ],
-};
+}
 
-const PIECE_TYPES = Object.keys(SHAPES);
-
-let board;
-let currentPiece;
-let nextPiece;
-let score;
-let lines;
-let level;
-let dropCounter;
-let dropInterval;
-let lastTime;
-let animationId;
-let isRunning;
-let isPaused;
-let isGameOver;
+let board = createBoard()
+let currentPiece = createPiece()
+let nextPiece = createPiece()
+let score = 0
+let lines = 0
+let level = 1
+let dropCounter = 0
+let dropInterval = 800
+let lastTime = 0
+let paused = false
+let gameOver = false
+let gameStarted = false
 
 function createBoard() {
-  return Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+  return Array.from({ length: ROWS }, () => Array(COLS).fill(null))
 }
 
-function cloneMatrix(matrix) {
-  return matrix.map((row) => [...row]);
-}
+function createPiece() {
+  const keys = Object.keys(SHAPES)
+  const type = keys[Math.floor(Math.random() * keys.length)]
+  const matrix = SHAPES[type].map((row) => [...row])
 
-function createPiece(type = randomType()) {
-  const matrix = cloneMatrix(SHAPES[type]);
   return {
     type,
     matrix,
-    color: COLORS[type],
     x: Math.floor(COLS / 2) - Math.ceil(matrix[0].length / 2),
     y: 0,
-  };
-}
-
-function randomType() {
-  return PIECE_TYPES[Math.floor(Math.random() * PIECE_TYPES.length)];
-}
-
-function resetGame() {
-  board = createBoard();
-  score = 0;
-  lines = 0;
-  level = 1;
-  dropCounter = 0;
-  dropInterval = 850;
-  lastTime = 0;
-  isRunning = true;
-  isPaused = false;
-  isGameOver = false;
-  currentPiece = createPiece();
-  nextPiece = createPiece();
-  updateHud();
-  updateStatus("游戏中");
-  pauseBtn.textContent = "暂停";
-}
-
-function startGame() {
-  startScreen.classList.add("hidden");
-  gameScreen.classList.remove("hidden");
-  resetGame();
-  cancelAnimationFrame(animationId);
-  animationId = requestAnimationFrame(update);
-}
-
-function restartGame() {
-  resetGame();
-  cancelAnimationFrame(animationId);
-  animationId = requestAnimationFrame(update);
-}
-
-function exitGame() {
-  isRunning = false;
-  isPaused = false;
-  isGameOver = false;
-  cancelAnimationFrame(animationId);
-  startScreen.classList.remove("hidden");
-  gameScreen.classList.add("hidden");
-}
-
-function togglePause() {
-  if (!isRunning || isGameOver) return;
-
-  isPaused = !isPaused;
-  pauseBtn.textContent = isPaused ? "继续" : "暂停";
-  updateStatus(isPaused ? "已暂停" : "游戏中");
-
-  if (!isPaused) {
-    lastTime = 0;
-    animationId = requestAnimationFrame(update);
   }
 }
 
-function update(time = 0) {
-  if (!isRunning || isPaused || isGameOver) {
-    draw();
-    return;
-  }
+function drawBlock(context, x, y, color, blockSize = BLOCK) {
+  context.fillStyle = color
+  context.fillRect(x * blockSize, y * blockSize, blockSize, blockSize)
 
-  const delta = time - lastTime;
-  lastTime = time;
-  dropCounter += delta;
-
-  if (dropCounter > dropInterval) {
-    softDrop();
-  }
-
-  draw();
-  animationId = requestAnimationFrame(update);
-}
-
-function updateHud() {
-  scoreText.textContent = String(score);
-  linesText.textContent = String(lines);
-  levelText.textContent = String(level);
-}
-
-function updateStatus(text) {
-  statusText.textContent = text;
-}
-
-function drawCell(targetCtx, x, y, size, color) {
-  const px = x * size;
-  const py = y * size;
-
-  targetCtx.fillStyle = color;
-  targetCtx.fillRect(px, py, size, size);
-
-  targetCtx.strokeStyle = "rgba(255, 255, 255, 0.22)";
-  targetCtx.lineWidth = 2;
-  targetCtx.strokeRect(px + 1, py + 1, size - 2, size - 2);
-
-  targetCtx.fillStyle = "rgba(255, 255, 255, 0.18)";
-  targetCtx.fillRect(px + 3, py + 3, size - 6, 4);
+  context.strokeStyle = 'rgba(255, 255, 255, 0.22)'
+  context.lineWidth = 2
+  context.strokeRect(x * blockSize + 1, y * blockSize + 1, blockSize - 2, blockSize - 2)
 }
 
 function drawBoard() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-  ctx.fillStyle = "#0b1020";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#0d1220'
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-  drawGrid();
+  for (let y = 0; y < ROWS; y++) {
+    for (let x = 0; x < COLS; x++) {
+      const color = board[y][x]
 
-  for (let y = 0; y < ROWS; y += 1) {
-    for (let x = 0; x < COLS; x += 1) {
-      const color = board[y][x];
       if (color) {
-        drawCell(ctx, x, y, BLOCK, color);
+        drawBlock(ctx, x, y, color)
+      } else {
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)'
+        ctx.strokeRect(x * BLOCK, y * BLOCK, BLOCK, BLOCK)
       }
     }
   }
-}
 
-function drawGrid() {
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.06)";
-  ctx.lineWidth = 1;
-
-  for (let x = 0; x <= COLS; x += 1) {
-    ctx.beginPath();
-    ctx.moveTo(x * BLOCK, 0);
-    ctx.lineTo(x * BLOCK, ROWS * BLOCK);
-    ctx.stroke();
-  }
-
-  for (let y = 0; y <= ROWS; y += 1) {
-    ctx.beginPath();
-    ctx.moveTo(0, y * BLOCK);
-    ctx.lineTo(COLS * BLOCK, y * BLOCK);
-    ctx.stroke();
+  if (gameStarted) {
+    drawPiece(ctx, currentPiece)
   }
 }
 
-function drawPiece(piece) {
+function drawPiece(context, piece) {
   piece.matrix.forEach((row, y) => {
     row.forEach((value, x) => {
       if (value) {
-        drawCell(ctx, piece.x + x, piece.y + y, BLOCK, piece.color);
+        drawBlock(context, piece.x + x, piece.y + y, COLORS[piece.type])
       }
-    });
-  });
+    })
+  })
 }
 
 function drawNextPiece() {
-  nextCtx.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
+  nextCtx.clearRect(0, 0, nextCanvas.width, nextCanvas.height)
+  nextCtx.fillStyle = '#0d1220'
+  nextCtx.fillRect(0, 0, nextCanvas.width, nextCanvas.height)
 
-  nextCtx.fillStyle = "rgba(0, 0, 0, 0.2)";
-  nextCtx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
+  if (!gameStarted) return
 
-  if (!nextPiece) return;
-
-  const matrix = nextPiece.matrix;
-  const size = matrix.length === 4 ? 20 : 24;
-  const pieceWidth = matrix[0].length * size;
-  const pieceHeight = matrix.length * size;
-  const offsetX = Math.floor((nextCanvas.width - pieceWidth) / 2);
-  const offsetY = Math.floor((nextCanvas.height - pieceHeight) / 2);
+  const blockSize = 24
+  const matrix = nextPiece.matrix
+  const offsetX = Math.floor((nextCanvas.width / blockSize - matrix[0].length) / 2)
+  const offsetY = Math.floor((nextCanvas.height / blockSize - matrix.length) / 2)
 
   matrix.forEach((row, y) => {
     row.forEach((value, x) => {
-      if (!value) return;
-
-      const px = offsetX + x * size;
-      const py = offsetY + y * size;
-
-      nextCtx.fillStyle = nextPiece.color;
-      nextCtx.fillRect(px, py, size, size);
-
-      nextCtx.strokeStyle = "rgba(255, 255, 255, 0.22)";
-      nextCtx.lineWidth = 2;
-      nextCtx.strokeRect(px + 1, py + 1, size - 2, size - 2);
-
-      nextCtx.fillStyle = "rgba(255, 255, 255, 0.18)";
-      nextCtx.fillRect(px + 3, py + 3, size - 6, 4);
-    });
-  });
+      if (value) {
+        drawBlock(nextCtx, offsetX + x, offsetY + y, COLORS[nextPiece.type], blockSize)
+      }
+    })
+  })
 }
 
-function drawOverlay(text) {
-  ctx.fillStyle = "rgba(5, 8, 18, 0.74)";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+function collide(piece, offsetX = 0, offsetY = 0, testMatrix = piece.matrix) {
+  for (let y = 0; y < testMatrix.length; y++) {
+    for (let x = 0; x < testMatrix[y].length; x++) {
+      if (!testMatrix[y][x]) continue
 
-  ctx.fillStyle = "#f5f7ff";
-  ctx.font = "bold 34px system-ui, sans-serif";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(text, canvas.width / 2, canvas.height / 2);
-}
-
-function draw() {
-  drawBoard();
-
-  if (currentPiece) {
-    drawPiece(currentPiece);
-  }
-
-  drawNextPiece();
-
-  if (isPaused) {
-    drawOverlay("暂停");
-  }
-
-  if (isGameOver) {
-    drawOverlay("游戏结束");
-  }
-}
-
-function collide(piece, offsetX = 0, offsetY = 0, matrix = piece.matrix) {
-  for (let y = 0; y < matrix.length; y += 1) {
-    for (let x = 0; x < matrix[y].length; x += 1) {
-      if (!matrix[y][x]) continue;
-
-      const newX = piece.x + x + offsetX;
-      const newY = piece.y + y + offsetY;
+      const newX = piece.x + x + offsetX
+      const newY = piece.y + y + offsetY
 
       if (newX < 0 || newX >= COLS || newY >= ROWS) {
-        return true;
+        return true
       }
 
       if (newY >= 0 && board[newY][newX]) {
-        return true;
+        return true
       }
     }
   }
 
-  return false;
+  return false
 }
 
 function mergePiece() {
   currentPiece.matrix.forEach((row, y) => {
     row.forEach((value, x) => {
-      if (!value) return;
+      if (value) {
+        const boardY = currentPiece.y + y
+        const boardX = currentPiece.x + x
 
-      const boardY = currentPiece.y + y;
-      const boardX = currentPiece.x + x;
-
-      if (boardY >= 0) {
-        board[boardY][boardX] = currentPiece.color;
+        if (boardY >= 0) {
+          board[boardY][boardX] = COLORS[currentPiece.type]
+        }
       }
-    });
-  });
+    })
+  })
 }
 
 function clearLines() {
-  let cleared = 0;
+  let cleared = 0
 
-  outer: for (let y = ROWS - 1; y >= 0; y -= 1) {
-    for (let x = 0; x < COLS; x += 1) {
+  outer: for (let y = ROWS - 1; y >= 0; y--) {
+    for (let x = 0; x < COLS; x++) {
       if (!board[y][x]) {
-        continue outer;
+        continue outer
       }
     }
 
-    const row = board.splice(y, 1)[0].fill(null);
-    board.unshift(row);
-    cleared += 1;
-    y += 1;
+    board.splice(y, 1)
+    board.unshift(Array(COLS).fill(null))
+    cleared++
+    y++
   }
 
   if (cleared > 0) {
-    const lineScores = [0, 100, 300, 500, 800];
-    score += lineScores[cleared] * level;
-    lines += cleared;
-    level = Math.floor(lines / 10) + 1;
-    dropInterval = Math.max(120, 850 - (level - 1) * 70);
-    updateHud();
-  }
-}
-
-function spawnNextPiece() {
-  currentPiece = nextPiece;
-  currentPiece.x = Math.floor(COLS / 2) - Math.ceil(currentPiece.matrix[0].length / 2);
-  currentPiece.y = 0;
-  nextPiece = createPiece();
-
-  if (collide(currentPiece)) {
-    gameOver();
-  }
-}
-
-function gameOver() {
-  isGameOver = true;
-  isRunning = false;
-  updateStatus("游戏结束");
-  draw();
-}
-
-function softDrop() {
-  if (!isRunning || isPaused || isGameOver) return;
-
-  if (!collide(currentPiece, 0, 1)) {
-    currentPiece.y += 1;
-  } else {
-    mergePiece();
-    clearLines();
-    spawnNextPiece();
-  }
-
-  dropCounter = 0;
-}
-
-function hardDrop() {
-  if (!isRunning || isPaused || isGameOver) return;
-
-  let distance = 0;
-
-  while (!collide(currentPiece, 0, 1)) {
-    currentPiece.y += 1;
-    distance += 1;
-  }
-
-  score += distance * 2;
-  updateHud();
-
-  mergePiece();
-  clearLines();
-  spawnNextPiece();
-  dropCounter = 0;
-  draw();
-}
-
-function movePiece(direction) {
-  if (!isRunning || isPaused || isGameOver) return;
-
-  if (!collide(currentPiece, direction, 0)) {
-    currentPiece.x += direction;
-    draw();
+    lines += cleared
+    score += [0, 100, 300, 500, 800][cleared] * level
+    level = Math.floor(lines / 10) + 1
+    dropInterval = Math.max(120, 800 - (level - 1) * 70)
+    updateInfo()
   }
 }
 
 function rotateMatrix(matrix) {
-  const size = matrix.length;
-  const result = Array.from({ length: size }, () => Array(size).fill(0));
+  const size = matrix.length
+  const rotated = Array.from({ length: size }, () => Array(size).fill(0))
 
-  for (let y = 0; y < size; y += 1) {
-    for (let x = 0; x < size; x += 1) {
-      result[x][size - 1 - y] = matrix[y][x];
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      rotated[x][size - 1 - y] = matrix[y][x]
     }
   }
 
-  return result;
+  return rotated
 }
 
 function rotatePiece() {
-  if (!isRunning || isPaused || isGameOver) return;
-  if (currentPiece.type === "O") return;
+  if (!gameStarted || paused || gameOver) return
 
-  const rotated = rotateMatrix(currentPiece.matrix);
-  const originalX = currentPiece.x;
+  const rotated = rotateMatrix(currentPiece.matrix)
 
-  const kicks = [0, -1, 1, -2, 2];
-
-  for (const kick of kicks) {
-    currentPiece.x = originalX + kick;
-
-    if (!collide(currentPiece, 0, 0, rotated)) {
-      currentPiece.matrix = rotated;
-      draw();
-      return;
-    }
+  if (!collide(currentPiece, 0, 0, rotated)) {
+    currentPiece.matrix = rotated
+    return
   }
 
-  currentPiece.x = originalX;
+  if (!collide(currentPiece, -1, 0, rotated)) {
+    currentPiece.x--
+    currentPiece.matrix = rotated
+    return
+  }
+
+  if (!collide(currentPiece, 1, 0, rotated)) {
+    currentPiece.x++
+    currentPiece.matrix = rotated
+  }
 }
 
-function getCanvasCellWidth() {
-  const rect = canvas.getBoundingClientRect();
-  return rect.width / COLS;
+function movePiece(direction) {
+  if (!gameStarted || paused || gameOver) return
+
+  if (!collide(currentPiece, direction, 0)) {
+    currentPiece.x += direction
+  }
 }
 
-/* Keyboard */
+function dropPiece() {
+  if (!gameStarted || paused || gameOver) return
 
-document.addEventListener("keydown", (event) => {
-  if (event.key === "ArrowLeft") {
-    event.preventDefault();
-    movePiece(-1);
+  if (!collide(currentPiece, 0, 1)) {
+    currentPiece.y++
+    return
   }
 
-  if (event.key === "ArrowRight") {
-    event.preventDefault();
-    movePiece(1);
-  }
-
-  if (event.key === "ArrowDown") {
-    event.preventDefault();
-    softDrop();
-  }
-
-  if (event.key === "ArrowUp") {
-    event.preventDefault();
-    rotatePiece();
-  }
-
-  if (event.code === "Space") {
-    event.preventDefault();
-    hardDrop();
-  }
-
-  if (event.key.toLowerCase() === "p") {
-    event.preventDefault();
-    togglePause();
-  }
-});
-
-/* Mouse + touch canvas control */
-
-let pointerActive = false;
-let pointerId = null;
-let pointerStartX = 0;
-let pointerStartY = 0;
-let pointerLastX = 0;
-let pointerMoved = false;
-let pointerWasTouch = false;
-let touchHardDropped = false;
-let lastMouseClickTime = 0;
-
-canvas.addEventListener("contextmenu", (event) => {
-  event.preventDefault();
-  rotatePiece();
-});
-
-canvas.addEventListener(
-  "pointerdown",
-  (event) => {
-    event.preventDefault();
-
-    if (!isRunning || isPaused || isGameOver) return;
-
-    canvas.setPointerCapture?.(event.pointerId);
-
-    pointerActive = true;
-    pointerId = event.pointerId;
-    pointerStartX = event.clientX;
-    pointerStartY = event.clientY;
-    pointerLastX = event.clientX;
-    pointerMoved = false;
-    pointerWasTouch = event.pointerType === "touch";
-    touchHardDropped = false;
-
-    if (event.pointerType === "mouse" && event.button === 2) {
-      rotatePiece();
-      pointerActive = false;
-      return;
-    }
-
-    if (event.pointerType === "mouse" && event.button === 0) {
-      const now = Date.now();
-
-      if (now - lastMouseClickTime < 280) {
-        hardDrop();
-        lastMouseClickTime = 0;
-        pointerActive = false;
-        return;
-      }
-
-      lastMouseClickTime = now;
-    }
-  },
-  { passive: false },
-);
-
-canvas.addEventListener(
-  "pointermove",
-  (event) => {
-    event.preventDefault();
-
-    if (!pointerActive || event.pointerId !== pointerId) return;
-    if (!isRunning || isPaused || isGameOver) return;
-
-    const dxFromStart = event.clientX - pointerStartX;
-    const dyFromStart = event.clientY - pointerStartY;
-    const dxFromLast = event.clientX - pointerLastX;
-
-    const cellWidth = getCanvasCellWidth();
-    const horizontalStep = Math.max(18, cellWidth * 0.72);
-
-    if (Math.abs(dxFromLast) >= horizontalStep) {
-      const steps = Math.trunc(dxFromLast / horizontalStep);
-      const direction = steps > 0 ? 1 : -1;
-      const count = Math.min(4, Math.abs(steps));
-
-      for (let i = 0; i < count; i += 1) {
-        movePiece(direction);
-      }
-
-      pointerLastX += steps * horizontalStep;
-      pointerMoved = true;
-    }
-
-    if (
-      pointerWasTouch &&
-      !touchHardDropped &&
-      dyFromStart > 72 &&
-      Math.abs(dyFromStart) > Math.abs(dxFromStart) * 1.15
-    ) {
-      touchHardDropped = true;
-      pointerMoved = true;
-      hardDrop();
-    }
-
-    if (Math.abs(dxFromStart) > 10 || Math.abs(dyFromStart) > 10) {
-      pointerMoved = true;
-    }
-  },
-  { passive: false },
-);
-
-canvas.addEventListener(
-  "pointerup",
-  (event) => {
-    event.preventDefault();
-
-    if (!pointerActive || event.pointerId !== pointerId) return;
-
-    const wasTouch = pointerWasTouch;
-    const moved = pointerMoved;
-    const dropped = touchHardDropped;
-
-    pointerActive = false;
-    pointerId = null;
-
-    canvas.releasePointerCapture?.(event.pointerId);
-
-    if (!isRunning || isPaused || isGameOver) return;
-
-    if (wasTouch && !moved && !dropped) {
-      rotatePiece();
-    }
-  },
-  { passive: false },
-);
-
-canvas.addEventListener(
-  "pointercancel",
-  (event) => {
-    event.preventDefault();
-    pointerActive = false;
-    pointerId = null;
-  },
-  { passive: false },
-);
-
-/* Buttons */
-
-function bindHoldButton(button, action, repeatDelay = 120) {
-  let timer = null;
-
-  const start = (event) => {
-    event.preventDefault();
-    action();
-
-    timer = window.setInterval(() => {
-      action();
-    }, repeatDelay);
-  };
-
-  const stop = (event) => {
-    event?.preventDefault?.();
-
-    if (timer) {
-      clearInterval(timer);
-      timer = null;
-    }
-  };
-
-  button.addEventListener("pointerdown", start, { passive: false });
-  button.addEventListener("pointerup", stop, { passive: false });
-  button.addEventListener("pointerleave", stop, { passive: false });
-  button.addEventListener("pointercancel", stop, { passive: false });
+  mergePiece()
+  clearLines()
+  spawnNextPiece()
 }
 
-bindHoldButton(leftBtn, () => movePiece(-1));
-bindHoldButton(rightBtn, () => movePiece(1));
-bindHoldButton(dropBtn, hardDrop, 220);
+function hardDrop() {
+  if (!gameStarted || paused || gameOver) return
 
-rotateBtn.addEventListener("click", () => {
-  rotatePiece();
-});
+  while (!collide(currentPiece, 0, 1)) {
+    currentPiece.y++
+    score += 2
+  }
 
-startBtn.addEventListener("click", startGame);
-pauseBtn.addEventListener("click", togglePause);
-restartBtn.addEventListener("click", restartGame);
-exitBtn.addEventListener("click", exitGame);
+  dropPiece()
+  updateInfo()
+}
 
-/* Prevent iPhone double tap zoom around buttons */
+function spawnNextPiece() {
+  currentPiece = nextPiece
+  nextPiece = createPiece()
 
-let lastTouchEnd = 0;
+  if (collide(currentPiece, 0, 0)) {
+    gameOver = true
+    document.querySelector('#status').textContent = '游戏结束'
+  }
+}
+
+function updateInfo() {
+  document.querySelector('#score').textContent = score
+  document.querySelector('#lines').textContent = lines
+  document.querySelector('#level').textContent = level
+}
+
+function resetGame() {
+  board = createBoard()
+  currentPiece = createPiece()
+  nextPiece = createPiece()
+  score = 0
+  lines = 0
+  level = 1
+  dropCounter = 0
+  dropInterval = 800
+  lastTime = 0
+  paused = false
+  gameOver = false
+  gameStarted = true
+  document.querySelector('#status').textContent = '游戏中'
+  updateInfo()
+}
+
+function startGame() {
+  startScreen.classList.add('hidden')
+  gameShell.classList.remove('hidden')
+  resetGame()
+}
+
+function quitGame() {
+  gameStarted = false
+  paused = false
+  gameOver = false
+  pointerActive = false
+  startScreen.classList.remove('hidden')
+  gameShell.classList.add('hidden')
+  document.querySelector('#status').textContent = '游戏中'
+  updateInfo()
+}
+
+function togglePause() {
+  if (!gameStarted || gameOver) return
+
+  paused = !paused
+  document.querySelector('#status').textContent = paused ? '已暂停' : '游戏中'
+}
+
+function update(time = 0) {
+  const deltaTime = time - lastTime
+  lastTime = time
+
+  if (gameStarted && !paused && !gameOver) {
+    dropCounter += deltaTime
+
+    if (dropCounter > dropInterval) {
+      dropPiece()
+      dropCounter = 0
+    }
+  }
+
+  drawBoard()
+  drawNextPiece()
+
+  requestAnimationFrame(update)
+}
+
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'p' || event.key === 'P') {
+    togglePause()
+    return
+  }
+
+  if (event.key === 'r' || event.key === 'R') {
+    if (gameStarted) resetGame()
+    return
+  }
+
+  if (!gameStarted || paused || gameOver) return
+
+  if (event.key === 'ArrowLeft') movePiece(-1)
+  if (event.key === 'ArrowRight') movePiece(1)
+  if (event.key === 'ArrowDown') dropPiece()
+  if (event.key === 'ArrowUp') rotatePiece()
+  if (event.code === 'Space') {
+    event.preventDefault()
+    hardDrop()
+  }
+})
+
+let pointerActive = false
+let pointerStartX = 0
+let pointerStartY = 0
+let pointerLastX = 0
+let pointerMoved = false
+let pointerType = 'mouse'
+let lastTouchEndTime = 0
+let lastPointerWasTouch = false
+
+const horizontalMoveThreshold = 24
+const verticalDropThreshold = 70
+const tapThreshold = 10
+
+function preventBrowserGesture(event) {
+  event.preventDefault()
+}
+
+document.addEventListener('contextmenu', preventBrowserGesture)
+document.addEventListener('dblclick', preventBrowserGesture, { passive: false, capture: true })
+document.addEventListener('dragstart', preventBrowserGesture, { passive: false, capture: true })
+document.addEventListener('gesturestart', preventBrowserGesture, { passive: false })
+document.addEventListener('gesturechange', preventBrowserGesture, { passive: false })
+document.addEventListener('gestureend', preventBrowserGesture, { passive: false })
 
 document.addEventListener(
-  "touchend",
+  'touchend',
   (event) => {
-    const now = Date.now();
+    const now = Date.now()
 
-    if (now - lastTouchEnd <= 300) {
-      event.preventDefault();
+    if (now - lastTouchEndTime <= 500) {
+      event.preventDefault()
+      event.stopPropagation()
     }
 
-    lastTouchEnd = now;
+    lastTouchEndTime = now
+  },
+  { passive: false, capture: true },
+)
+
+canvas.addEventListener(
+  'touchstart',
+  (event) => {
+    event.preventDefault()
   },
   { passive: false },
-);
+)
 
-/* Initial paint */
+canvas.addEventListener(
+  'touchmove',
+  (event) => {
+    event.preventDefault()
+  },
+  { passive: false },
+)
 
-resetGame();
-isRunning = false;
-draw();
+canvas.addEventListener(
+  'touchend',
+  (event) => {
+    event.preventDefault()
+  },
+  { passive: false },
+)
+
+canvas.addEventListener('pointerdown', (event) => {
+  event.preventDefault()
+
+  if (!gameStarted || paused || gameOver) return
+
+  canvas.setPointerCapture(event.pointerId)
+
+  pointerActive = true
+  pointerStartX = event.clientX
+  pointerStartY = event.clientY
+  pointerLastX = event.clientX
+  pointerMoved = false
+  pointerType = event.pointerType
+  lastPointerWasTouch = event.pointerType !== 'mouse'
+
+  if (event.pointerType === 'mouse' && event.button === 2) {
+    event.preventDefault()
+    rotatePiece()
+    pointerActive = false
+    return
+  }
+})
+
+canvas.addEventListener('pointermove', (event) => {
+  event.preventDefault()
+
+  if (!pointerActive || !gameStarted || paused || gameOver) return
+
+  const diffFromStartX = event.clientX - pointerStartX
+  const diffFromStartY = event.clientY - pointerStartY
+  const diffFromLastX = event.clientX - pointerLastX
+
+  if (Math.abs(diffFromStartX) > tapThreshold || Math.abs(diffFromStartY) > tapThreshold) {
+    pointerMoved = true
+  }
+
+  if (diffFromStartY >= verticalDropThreshold && Math.abs(diffFromStartY) > Math.abs(diffFromStartX) * 1.4) {
+    hardDrop()
+    pointerActive = false
+    return
+  }
+
+  if (Math.abs(diffFromLastX) >= horizontalMoveThreshold) {
+    const direction = diffFromLastX > 0 ? 1 : -1
+    movePiece(direction)
+    pointerLastX = event.clientX
+    pointerMoved = true
+  }
+})
+
+canvas.addEventListener('pointerup', (event) => {
+  event.preventDefault()
+
+  if (!pointerActive || !gameStarted || paused || gameOver) return
+
+  pointerActive = false
+
+  if (pointerType !== 'mouse' && !pointerMoved) {
+    rotatePiece()
+  }
+})
+
+canvas.addEventListener('dblclick', (event) => {
+  event.preventDefault()
+
+  if (!gameStarted || paused || gameOver) return
+  if (lastPointerWasTouch) return
+  if (pointerType !== 'mouse') return
+
+  hardDrop()
+})
+
+canvas.addEventListener('pointercancel', () => {
+  pointerActive = false
+})
+
+startButton.addEventListener('click', startGame)
+document.querySelector('#left').addEventListener('click', () => movePiece(-1))
+document.querySelector('#right').addEventListener('click', () => movePiece(1))
+document.querySelector('#rotate').addEventListener('click', () => rotatePiece())
+document.querySelector('#drop').addEventListener('click', () => hardDrop())
+document.querySelector('#pause').addEventListener('click', togglePause)
+document.querySelector('#restart').addEventListener('click', resetGame)
+document.querySelector('#quit').addEventListener('click', quitGame)
+
+updateInfo()
+update()
