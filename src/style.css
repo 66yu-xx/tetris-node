@@ -35,6 +35,25 @@ body {
   -webkit-user-select: none;
 }
 
+/*
+  游戏运行时锁住整个页面。
+  目标：iPhone 上不要页面滚动、不要双击放大、不要视觉视口乱动。
+*/
+html.game-locked,
+body.game-locked {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: fixed;
+  inset: 0;
+  touch-action: none;
+  overscroll-behavior: none;
+}
+
+body.game-locked {
+  min-height: 100dvh;
+}
+
 button,
 canvas {
   user-select: none;
@@ -51,7 +70,7 @@ button {
   font-weight: 700;
   cursor: pointer;
   box-shadow: inset 0 0 0 1px var(--border);
-  touch-action: manipulation;
+  touch-action: none;
 }
 
 button:active {
@@ -116,6 +135,7 @@ button:active {
   width: 100%;
   height: 100dvh;
   overflow: hidden;
+  touch-action: none;
   padding:
     max(10px, env(safe-area-inset-top))
     max(10px, env(safe-area-inset-right))
@@ -127,11 +147,22 @@ button:active {
   width: 100%;
   height: 100%;
   overflow: hidden;
+  touch-action: none;
   display: grid;
   grid-template-columns: minmax(0, auto) clamp(112px, 26vw, 250px);
   gap: clamp(8px, 2vw, 16px);
   align-items: center;
   justify-content: center;
+}
+
+.board-panel,
+.side-panel,
+.next-card,
+.score-card,
+.control-card,
+.touch-controls,
+.action-controls {
+  touch-action: none;
 }
 
 .board-panel {

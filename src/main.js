@@ -39,10 +39,56 @@ document.addEventListener("dragstart", (event) => {
   event.preventDefault();
 });
 
+/* mobile screen lock */
+
+let savedScrollY = 0;
+
+function isGameScreenOpen() {
+  return !gameScreen.classList.contains("hidden");
+}
+
+function lockMobileGameScreen() {
+  savedScrollY = window.scrollY || window.pageYOffset || 0;
+
+  document.documentElement.classList.add("game-locked");
+  document.body.classList.add("game-locked");
+  document.body.style.top = `-${savedScrollY}px`;
+}
+
+function unlockMobileGameScreen() {
+  document.documentElement.classList.remove("game-locked");
+  document.body.classList.remove("game-locked");
+  document.body.style.top = "";
+
+  window.scrollTo(0, savedScrollY);
+}
+
+document.addEventListener(
+  "touchmove",
+  (event) => {
+    if (isGameScreenOpen()) {
+      event.preventDefault();
+    }
+  },
+  { passive: false },
+);
+
+document.addEventListener(
+  "touchstart",
+  (event) => {
+    if (isGameScreenOpen() && event.touches.length > 1) {
+      event.preventDefault();
+    }
+  },
+  { passive: false },
+);
+
 document.addEventListener(
   "gesturestart",
   (event) => {
-    event.preventDefault();
+    if (isGameScreenOpen()) {
+      event.preventDefault();
+    }
   },
   { passive: false },
 );
@@ -50,7 +96,9 @@ document.addEventListener(
 document.addEventListener(
   "gesturechange",
   (event) => {
-    event.preventDefault();
+    if (isGameScreenOpen()) {
+      event.preventDefault();
+    }
   },
   { passive: false },
 );
@@ -58,7 +106,9 @@ document.addEventListener(
 document.addEventListener(
   "gestureend",
   (event) => {
-    event.preventDefault();
+    if (isGameScreenOpen()) {
+      event.preventDefault();
+    }
   },
   { passive: false },
 );
@@ -280,6 +330,7 @@ function resetGame() {
 }
 
 function startGame() {
+  lockMobileGameScreen();
   initAudio();
 
   startScreen.classList.add("hidden");
@@ -293,6 +344,7 @@ function startGame() {
 }
 
 function restartGame() {
+  lockMobileGameScreen();
   initAudio();
 
   resetGame();
@@ -311,6 +363,8 @@ function exitGame() {
 
   startScreen.classList.remove("hidden");
   gameScreen.classList.add("hidden");
+
+  unlockMobileGameScreen();
 }
 
 function togglePause() {
@@ -903,16 +957,20 @@ pauseBtn.addEventListener("click", togglePause);
 restartBtn.addEventListener("click", restartGame);
 exitBtn.addEventListener("click", exitGame);
 
-/* prevent iPhone double tap zoom */
-
+/*
+  防 iPhone 双击放大。
+  只在游戏界面打开时强制阻止，避免影响开始页普通点击。
+*/
 let lastTouchEnd = 0;
 
 document.addEventListener(
   "touchend",
   (event) => {
+    if (!isGameScreenOpen()) return;
+
     const now = Date.now();
 
-    if (now - lastTouchEnd <= 300) {
+    if (now - lastTouchEnd <= 350) {
       event.preventDefault();
     }
 
